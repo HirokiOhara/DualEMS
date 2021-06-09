@@ -1,7 +1,7 @@
 /*
 
-xxTITLExx
-ver. 1.1
+GUI and Software for "EiMS"
+ver. 1.2
 
 This is audio output ver. software for EMS & IFC.
 Most of this software based on wavEMS.
@@ -23,24 +23,28 @@ import javax.sound.sampled.*;
 PFont font;
 float pulseH = 50;
 HashMap<String, Integer> settings;
-//settings = {TYPE=0, POLE=0, PERIOD=0, PULSE=0, f1=0, f2=0, TIME=0}
+/* settings = {TYPE=0, POLE=0, PERIOD=0, PULSE=0, f1=0, f2=0, TIME=0} */
 HashMap<Integer, Float> times;
-Boolean emg_flg;
-float sampleRate = 48000f;
+Boolean stop_flg;
+float sampleRate = 44100f;
 float gainSin = 2;
 float gainSaw = 6;
 float gainSquare = -2;
 
 Minim minim;
 AudioSample pulse;
-AudioFormat format = new AudioFormat( sampleRate, // sample rate
+AudioFormat format = new AudioFormat(
+  sampleRate, // sample rate
   16, // sample size in bits
   2, // channels for STEREO sound
   true, // signed
   true   // littleEndian which depends on CPU
   );
 
-// "b_" means button
+float x_calib;
+float y_calib;
+
+/* "b_" means button */
 Font b_font;
 GButton b_sin;
 GButton b_saw;
@@ -50,10 +54,10 @@ GButton b_bi;
 GButton b_01s;
 GButton b_1s;
 GButton b_5s;
-GButton b_pellere;
-GButton b_emg;
+GButton b_pulse;
+GButton b_stop;
 
-// "i_" means input field
+/* "i_" means input field */
 ControlP5 i_period;
 ControlP5 i_pulse;
 ControlP5 i_f1;  // f1: Left Speaker
@@ -61,18 +65,22 @@ ControlP5 i_f2;  // f2: Right Speaker
 
 
 
-// Variables for TEST
-//int t_setup_s;
-//int t_setup_e;
-//int t_draw_s;
-//int t_draw_e;
-
+/* Variables for TEST */
+//long t_setup_s;
+//long t_setup_e;
+long t_draw_s;
+long t_draw_e;
+//Survey survey = new Survey();
 
 
 void setup() {
-  //t_setup_s = millis();
-
-  size(1300, 837);
+  //t_setup_s = System.currentTimeMillis();
+  
+  //size(1300, 837);
+  fullScreen();
+  x_calib = (displayWidth-1200)/2;
+  y_calib = (displayHeight-787)/2;
+  
   font = createFont( "SansSerif", 18 );
   textFont( font );
   textAlign( LEFT, TOP );
@@ -81,10 +89,10 @@ void setup() {
   minim = new Minim(this);
 
   settings = new HashMap<String, Integer>();
-  // initialize
-  // TYPE --- 0:Sin, 1:Saw, 2:Square
-  // POLE --- 0:Mono, 1:Bi
-  // TIME --- 0:0.1s, 1:1s, 2:5s
+  /* initialize
+     TYPE --- 0:Sin, 1:Saw, 2:Square
+     POLE --- 0:Mono, 1:Bi
+     TIME --- 0:0.1s, 1:1s, 2:5s */
   settings.put("TYPE", 0);
   settings.put("POLE", 0);
   settings.put("PERIOD", 0);
@@ -98,51 +106,51 @@ void setup() {
   times.put(1, 1f);
   times.put(2, 5f);
 
-  emg_flg = false;
+  stop_flg = false;
 
-  //pulseが0である音を出力するように設定する
+  /* pulseが0である音を出力するように設定する */
   float[] zeroPulse = new float[int(sampleRate)];
   for (int i = 0; i < int(sampleRate); i++){
     zeroPulse[i] = 0;
   }
   pulse = minim.createSample(zeroPulse, zeroPulse, format);
-  //t_setup_e = millis();
+  
+  frameRate(120);
+  //survey = new Survey();
+  //t_setup_e = System.currentTimeMillis();
   //println("Time for setting up is " + (t_setup_e - t_setup_s) + "msec");
 }
 
 
 
 void draw() {
-  //t_draw_s = millis() - t_setup_e;
-
+  t_draw_s = System.currentTimeMillis();
+  
   createBackgroundOnGUI();
   createDisplaysOnGUI();
   createTextOnGUI();
   createStatusOnGUI();
-
   updateSettingsFromInputFields();
-
-  if (emg_flg == true) {
+  if (stop_flg == true) {
     pulse.stop();
-    emg_flg = false;
+    stop_flg = false;
   }
   
   //println(settings);
-
-  //t_draw_e = millis() - t_setup_e;
+  //survey.print_();
+  t_draw_e = System.currentTimeMillis();
   //println("Time for drawing is " + (t_draw_e - t_draw_s) + "msec");
 }
 
 
-
-void createButtonAndInputFieldOnGUI() {
+void createButtonAndInputFieldOnGUI() { 
   b_font = new Font( Font.SANS_SERIF, Font.PLAIN, 18 );
   GButton.useRoundCorners( false );
 
   //button for TYPE
-  b_sin = new GButton( this, 278, 75, 71, 30, "Sin" );
-  b_saw = new GButton( this, 351, 75, 71, 30, "Saw" );
-  b_square = new GButton( this, 424, 75, 71, 30, "Square" );
+  b_sin = new GButton( this, x_calib + 228, y_calib + 50, 71, 30, "Sin" );
+  b_saw = new GButton( this, x_calib + 301, y_calib + 50, 71, 30, "Saw" );
+  b_square = new GButton( this, x_calib + 374, y_calib + 50, 71, 30, "Square" );
   b_sin.setLocalColorScheme( 9 );
   b_saw.setLocalColorScheme( 8 );
   b_square.setLocalColorScheme( 8 );
@@ -151,17 +159,17 @@ void createButtonAndInputFieldOnGUI() {
   b_square.setFont(b_font);
 
   //button for POLE
-  b_mono = new GButton( this, 278, 109, 107.5, 30, "Mono" );
-  b_bi = new GButton( this, 387.5, 109, 107.5, 30, "Bi" );
+  b_mono = new GButton( this, x_calib + 228, y_calib + 84, 107.5, 30, "Mono" );
+  b_bi = new GButton( this, x_calib + 337.5, y_calib + 84, 107.5, 30, "Bi" );
   b_mono.setLocalColorScheme( 9 );
   b_bi.setLocalColorScheme( 8 );
   b_mono.setFont(b_font);
   b_bi.setFont(b_font);
 
   //button for 0.1s, 1s, 5s
-  b_01s = new GButton( this, 933, 109, 71, 30, "0.1s" );
-  b_1s = new GButton( this, 1006, 109, 71, 30, "1s" );
-  b_5s = new GButton( this, 1079, 109, 71, 30, "5s" );
+  b_01s = new GButton( this, x_calib + 883, y_calib + 84, 71, 30, "0.1s" );
+  b_1s = new GButton( this, x_calib + 956, y_calib + 84, 71, 30, "1s" );
+  b_5s = new GButton( this, x_calib + 1029, y_calib + 84, 71, 30, "5s" );
   b_01s.setLocalColorScheme( 9 );
   b_1s.setLocalColorScheme( 8 );
   b_5s.setLocalColorScheme( 8 );
@@ -169,14 +177,14 @@ void createButtonAndInputFieldOnGUI() {
   b_1s.setFont(b_font);
   b_5s.setFont(b_font);
 
-  //button for Pellere
-  b_pellere = new GButton( this, 933, 143, 144, 30, "Pellere" );
-  b_pellere.setLocalColorScheme( 10 );
-  b_pellere.setFont(b_font);
-  //button for EMG
-  b_emg = new GButton( this, 1079, 143, 71, 30, "EMG" );
-  b_emg.setLocalColorScheme( 11 );
-  b_emg.setFont(b_font);
+  //button for Pulse
+  b_pulse = new GButton( this, x_calib + 883, y_calib + 118, 144, 30, "Pulse" );
+  b_pulse.setLocalColorScheme( 10 );
+  b_pulse.setFont(b_font);
+  //button for Stop
+  b_stop = new GButton( this, x_calib + 1029, y_calib + 118, 71, 30, "Stop" );
+  b_stop.setLocalColorScheme( 11 );
+  b_stop.setFont(b_font);
 
   //input field for PERIOD:PULSE
   i_period = new ControlP5(this);
@@ -184,7 +192,7 @@ void createButtonAndInputFieldOnGUI() {
   i_f1 = new ControlP5(this);
   i_f2 = new ControlP5(this);
   i_period.addTextfield("PERIOD")
-    .setPosition(278, 143)
+    .setPosition(x_calib + 228, y_calib + 118)
     .setSize(100, 30)
     .setAutoClear(false)
     .setFont(font)
@@ -193,9 +201,9 @@ void createButtonAndInputFieldOnGUI() {
     .setColorActive(color(254, 107, 53))
     .setColorForeground(color(254, 107, 53))
     .setColorBackground(color(255, 255, 255))
-    .setColorCaptionLabel(color(243, 244, 247));
+    .setCaptionLabel("");
   i_pulse.addTextfield("PULSE")
-    .setPosition(395, 143)
+    .setPosition(x_calib + 345, y_calib + 118)
     .setSize(100, 30)
     .setAutoClear(false)
     .setFont(font)
@@ -204,11 +212,11 @@ void createButtonAndInputFieldOnGUI() {
     .setColorActive(color(254, 107, 53))
     .setColorForeground(color(254, 107, 53))
     .setColorBackground(color(255, 255, 255))
-    .setColorCaptionLabel(color(243, 244, 247));
+    .setCaptionLabel("");
 
   //input field for FREQ
   i_f1.addTextfield("f1")
-    .setPosition(278, 341.5)
+    .setPosition(x_calib + 228, y_calib + 316.5)
     .setSize(100, 30)
     .setAutoClear(false)
     .setFont(font)
@@ -217,9 +225,9 @@ void createButtonAndInputFieldOnGUI() {
     .setColorActive(color(254, 107, 53))
     .setColorForeground(color(254, 107, 53))
     .setColorBackground(color(255, 255, 255))
-    .setColorCaptionLabel(color(243, 244, 247));
+    .setCaptionLabel("");
   i_f2.addTextfield("f2")
-    .setPosition(278, 504.5)
+    .setPosition(x_calib + 228, y_calib + 479.5)
     .setSize(100, 30)
     .setAutoClear(false)
     .setFont(font)
@@ -228,21 +236,26 @@ void createButtonAndInputFieldOnGUI() {
     .setColorActive(color(254, 107, 53))
     .setColorForeground(color(254, 107, 53))
     .setColorBackground(color(255, 255, 255))
-    .setColorCaptionLabel(color(243, 244, 247));
+    .setCaptionLabel("");
 }
 
 
 
 void createBackgroundOnGUI() {
   background(255, 255, 255);
-  fill(243, 244, 247);
   noStroke();
   //AREA-1
-  rect(50, 25, 779, 198);
+  fill(149, 214, 208);
+  //rect(50, 25, 779, 198);
+  rect(x_calib, y_calib, 779, 198);
   //AREA-2
-  rect(50, 227, 1200, 585);
+  fill(255, 255, 255);
+  //rect(50, 227, 1200, 585);
+  rect(x_calib, y_calib + 202, 1200, 585);
   //AREA-3
-  rect(833, 25, 417, 198);
+  fill(149, 214, 208);
+  //rect(833, 25, 417, 198);
+  rect(x_calib + 783, y_calib, 417, 198);
 }
 
 
@@ -250,19 +263,19 @@ void createBackgroundOnGUI() {
 void createTextOnGUI() {
   //AREA-1
   fill(64, 64, 64);
-  text("TYPE", 150, 78);
-  text("POLE", 150, 112);
-  text("PERIOD:PULSE", 150, 146);
-  text(":", 383.5, 146);
+  text("TYPE", x_calib + 100, y_calib + 53);
+  text("POLE", x_calib + 100, y_calib + 87);
+  text("PERIOD:PULSE", x_calib + 100, y_calib + 121);
+  text(":", x_calib + 333.5, y_calib + 121);
   //AREA-2
-  text("FREQ", 150, 277);
-  text("BEAT", 150, 603);
-  text("f1", 200, 344.5);
-  text("f2", 200, 507.5);
-  text("|f1-f2|", 200, 670.5);
-  text("Hz", 382, 344.5);
-  text("Hz", 382, 507.5);
-  text("Hz", 382, 670.5);
+  text("FREQ", x_calib + 100, y_calib + 252);
+  text("BEAT", x_calib + 100, y_calib + 578);
+  text("f1", x_calib + 150, y_calib + 319.5);
+  text("f2", x_calib + 150, y_calib + 482.5);
+  text("|f1-f2|", x_calib + 150, y_calib + 645.5);
+  text("Hz", x_calib + 332, y_calib + 319.5);
+  text("Hz", x_calib + 332, y_calib + 482.5);
+  text("Hz", x_calib + 332, y_calib + 645.5);
 }
 
 
@@ -270,25 +283,29 @@ void createTextOnGUI() {
 void createDisplaysOnGUI() {
   fill(255, 255, 255);
   //"Preview"
-  rect(570, 75, 159, 98);
+  //rect(x_calib + 520, y_calib + 50, 159, 98);
   //"FREQ"
-  rect(460, 277, 686, 159);
-  rect(460, 440, 686, 159);
+  rect(x_calib + 410, y_calib + 252, 686, 159);
+  rect(x_calib + 410, y_calib + 415, 686, 159);
   //"BEAT"
-  rect(278, 667.5, 100, 30);
-  rect(460, 603, 686, 159);
+  rect(x_calib + 228, y_calib + 642.5, 100, 30);
+  rect(x_calib + 410, y_calib + 578, 686, 159);
   if (settings.get("f1") != 0 && settings.get("f2") != 0) {
     fill(64, 64, 64);
-    text(Math.abs( settings.get("f1") - settings.get("f2") ), 278, 670.5);
+    text(Math.abs( settings.get("f1") - settings.get("f2") ), x_calib + 228, y_calib + 645.5);
   }
   if (pulse != null) {
+    stroke( 68, 11, 212);
     for (int i = 0; i < 686; i++) {
-      stroke( 68, 11, 212);
-      line(460 + i, 356.5 - pulse.left.get(i) * pulseH, 460 + i+1, 356.5 - pulse.left.get(i+1) * pulseH);
-      stroke(255, 32, 121);
-      line(460 + i, 519.5 - pulse.right.get(i) * pulseH, 460 + i+1, 519.5 - pulse.right.get(i+1) * pulseH);
-      stroke( (68 + 255) / 2, (11 + 32) / 2, (212 + 121) / 2);
-      line(460 + i, 682.5 - ( pulse.right.get(i) + pulse.left.get(i) ) * pulseH, 460 + i+1, 682.5 - ( pulse.right.get(i+1) + pulse.left.get(i+1) ) * pulseH);
+      line(x_calib + 410 + i, y_calib + 331.5 - pulse.left.get(i) * pulseH, x_calib + 410 + i+1, y_calib + 331.5 - pulse.left.get(i+1) * pulseH);
+    }
+    stroke(255, 32, 121);
+    for (int i = 0; i < 686; i++) {
+      line(x_calib + 410 + i, y_calib + 494.5 - pulse.right.get(i) * pulseH, x_calib + 410 + i+1, y_calib + 494.5 - pulse.right.get(i+1) * pulseH);
+    }
+    stroke( (68 + 255) / 2, (11 + 32) / 2, (212 + 121) / 2);
+    for (int i = 0; i < 686; i++) {
+      line(x_calib + 410 + i, y_calib + 657.5 - ( pulse.right.get(i) + pulse.left.get(i) ) * pulseH, x_calib + 410 + i+1, y_calib + 657.5 - ( pulse.right.get(i+1) + pulse.left.get(i+1) ) * pulseH);
     }
     stroke(255, 255, 255);
   }
@@ -301,27 +318,28 @@ void createStatusOnGUI() {
     if ( (settings.get("f1") >= 20 && settings.get("f2") == 0)
       || (settings.get("f1") == 0 && settings.get("f2") >= 20)
       || (settings.get("f1") >= 20 && settings.get("f2") >= 20)) {
-      fill(68, 11, 212);
-      text("Ready", 933, 75);
-      b_pellere.setEnabled(true);
-      b_emg.setEnabled(true);
-      b_pellere.setLocalColorScheme( 12 );
-      b_emg.setLocalColorScheme( 11 );
+      fill(127, 255, 0);
+      text("Ready", x_calib + 883, y_calib + 50);
+      
+      b_pulse.setEnabled(true);
+      b_stop.setEnabled(true);
+      b_pulse.setLocalColorScheme( 12 );
+      b_stop.setLocalColorScheme( 11 );
     } else {
       fill(64, 64, 64);
-      text("Unprepared", 933, 75);
-      b_pellere.setEnabled(false);
-      b_emg.setEnabled(false);
-      b_pellere.setLocalColorScheme( 10 );
-      b_emg.setLocalColorScheme( 10 );
+      text("Unprepared", x_calib + 883, y_calib + 50);
+      b_pulse.setEnabled(false);
+      b_stop.setEnabled(false);
+      b_pulse.setLocalColorScheme( 10 );
+      b_stop.setLocalColorScheme( 10 );
     }
   } else {
     fill(64, 64, 64);
-    text("Unprepared", 933, 75);
-    b_pellere.setEnabled(false);
-    b_emg.setEnabled(false);
-    b_pellere.setLocalColorScheme( 10 );
-    b_emg.setLocalColorScheme( 10 );
+    text("Unprepared", x_calib + 883, y_calib + 50);
+    b_pulse.setEnabled(false);
+    b_stop.setEnabled(false);
+    b_pulse.setLocalColorScheme( 10 );
+    b_stop.setLocalColorScheme( 10 );
   }
 }
 
@@ -329,7 +347,7 @@ void createStatusOnGUI() {
 
 void handleButtonEvents(GButton button, GEvent event) {
   if (event == GEvent.CLICKED) {
-    if (button == b_pellere) {
+    if (button == b_pulse) {
       float[] pulse_f1 = new float[int(sampleRate * times.get(settings.get("TIME")))];
       float[] pulse_f2 = new float[int(sampleRate * times.get(settings.get("TIME")))];
       float cycle_f1 = sampleRate / (float)settings.get("f1");
@@ -347,8 +365,8 @@ void handleButtonEvents(GButton button, GEvent event) {
         pulse.setGain(gainSaw);
         pulse.trigger();
       }
-    } else if (button == b_emg) {
-      emg_flg = true;
+    } else if (button == b_stop) {
+      stop_flg = true;
     } else if (button == b_sin) {
       b_sin.setLocalColorScheme( 9 );
       b_saw.setLocalColorScheme( 8 );
@@ -438,14 +456,9 @@ void generateSinWaves(HashMap set, float[] LPulse, float[] RPulse, float LCyc, f
       RPulse[(int)wavelength_f2*(int(set.get("POLE").toString())+1) + ii +(int)RCyc*j] = 0;
     }
   }
-  println(max(RPulse));
-  println(max(LPulse));
-  println(min(RPulse));
-  println(min(LPulse));
   pulse = minim.createSample(LPulse, RPulse, format);
-  //AudioSample createSample(float[] leftSampleData, float[] rightSampleData, AudioFormat format);
-  //のようにして、１つの音源に左右独立の音を作成可能
-  //さらに、流れ出てくる音はプラスの山->マイナスの山->...の順番で発生することがわかった
+  /* AudioSample createSample(float[] leftSampleData, float[] rightSampleData, AudioFormat format);
+     のようにして、１つの音源に左右独立の音を作成可能 */
 }
 
 
@@ -524,4 +537,30 @@ void generateSquareWaves(HashMap set, float[] LPulse, float[] RPulse, float LCyc
   }
 
   pulse = minim.createSample(LPulse, RPulse, format);
+}
+
+
+class Survey {
+int fpsf;
+long nowTime;
+long frameTime;
+double f;
+float fps;
+int frame_survey;
+long startTime = System.currentTimeMillis();
+
+  void print_() {
+    frame_survey++;
+    if (frame_survey == 1)frameTime = System.currentTimeMillis();
+    fpsf++;
+    nowTime= System.currentTimeMillis();
+    double time=Math.floor((nowTime-startTime)/1000);
+    if ( time - f >= 1)
+    {
+      println(fpsf +" fps / "+((nowTime-frameTime)/fpsf)+" ms ");
+      fpsf=0;
+      f=time;
+      frameTime = System.currentTimeMillis();
+    }
+  }
 }
