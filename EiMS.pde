@@ -243,18 +243,14 @@ void createButtonAndInputFieldOnGUI() {
 
 void createBackgroundOnGUI() {
   background(255, 255, 255);
+  fill(255, 255, 255);
   noStroke();
   //AREA-1
-  fill(149, 214, 208);
-  //rect(50, 25, 779, 198);
   rect(x_calib, y_calib, 779, 198);
   //AREA-2
-  fill(255, 255, 255);
-  //rect(50, 227, 1200, 585);
   rect(x_calib, y_calib + 202, 1200, 585);
   //AREA-3
   fill(149, 214, 208);
-  //rect(833, 25, 417, 198);
   rect(x_calib + 783, y_calib, 417, 198);
 }
 
