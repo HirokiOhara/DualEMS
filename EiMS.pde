@@ -70,9 +70,9 @@ void setup() {
   fullScreen();
   //x_calib = (displayWidth-1200)/2;
   //y_calib = (displayHeight-787)/2;
-  x_calib = (displayWidth-1500)/2;
-  y_calib = (displayHeight-687)/2;
-  frameRate(120);
+  x_calib = displayWidth*0.1;
+  y_calib = (displayHeight-989)/2;
+  frameRate(60);
   /*
    Initialize of "settings"
    TYPE --- 0:Sin, 1:Saw, 2:Square

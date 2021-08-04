@@ -5,7 +5,7 @@ void generateSawWaves(HashMap set, float[] LPulse, float[] RPulse, float LCyc, f
   int wavelength_f2 = int(pulseWidth_f2 * float(set.get("PULSE").toString()) / float(set.get("PERIOD").toString()));
   int pole = int(set.get("POLE").toString());
   /*
-     Check the pole; 1:bi, 0:uni */
+   Check the pole; 1:bi, 0:uni */
   if (pole == 1) {
     /*
      LPulse */
