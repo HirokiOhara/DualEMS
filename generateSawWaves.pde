@@ -1,3 +1,6 @@
+/*
+ This functions "generateSawWaves" is mainly based on wavEMS(Kono 2019).*/   
+
 void generateSawWaves(HashMap set, float[] LPulse, float[] RPulse, float LCyc, float RCyc) {
   float pulseWidth_f1 = sampleRate / float(set.get("f1").toString());
   float pulseWidth_f2 = sampleRate / float(set.get("f2").toString());

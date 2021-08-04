@@ -1,3 +1,6 @@
+/*
+ This functions "generateSquareWaves" is mainly based on wavEMS(Kono 2019).*/
+
 void generateSquareWaves(HashMap set, float[] LPulse, float[] RPulse, float LCyc, float RCyc) {
   float pulseWidth_f1 = int(sampleRate / float(set.get("f1").toString()));
   float pulseWidth_f2 = int(sampleRate / float(set.get("f2").toString()));
