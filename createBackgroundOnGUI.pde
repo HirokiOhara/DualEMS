@@ -1,7 +1,6 @@
 void createBackgroundOnGUI() {
   background(255, 255, 255);
   fill(255, 255, 255);
-  //fill(155, 155, 155);
   noStroke();
   /*
    AREA-1 */
@@ -13,5 +12,5 @@ void createBackgroundOnGUI() {
   /*
    AREA-3 */
   fill(64, 64, 64);
-  rect(x_calib, y_calib + 791, displayWidth*0.8, 198);
+  rect(x_calib, y_calib + 791, displayWidth*0.8, 100);
 }

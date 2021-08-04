@@ -31,9 +31,9 @@ void createButtonAndInputFieldOnGUI() {
   /*
    button for 1[s], 2[s], 5[s] */
   //b_1s = new GButton( this, x_calib + 883, y_calib + 84, 71, 30, "1 sec" );
-  b_1s = new GButton( this, x_calib + 228, y_calib + 865, 71, 30, "1 sec" );
-  b_2s = new GButton( this, x_calib + 301, y_calib + 865, 71, 30, "2 sec" );
-  b_5s = new GButton( this, x_calib + 374, y_calib + 865, 71, 30, "5 sec" );
+  b_1s = new GButton( this, x_calib + 228, y_calib + 806, 71, 30, "1 sec" );
+  b_2s = new GButton( this, x_calib + 301, y_calib + 806, 71, 30, "2 sec" );
+  b_5s = new GButton( this, x_calib + 374, y_calib + 806, 71, 30, "5 sec" );
   b_1s.setLocalColorScheme( 9 );
   b_2s.setLocalColorScheme( 8 );
   b_5s.setLocalColorScheme( 8 );
@@ -43,13 +43,13 @@ void createButtonAndInputFieldOnGUI() {
   /*
    button for Pulse */
   //b_pulse = new GButton( this, x_calib + 883, y_calib + 118, 144, 30, "Pulse" );
-  b_pulse = new GButton( this, x_calib + 228, y_calib + 909, 144, 30, "Pulse" );
+  b_pulse = new GButton( this, x_calib + 228, y_calib + 846, 144, 30, "Pulse" );
   b_pulse.setLocalColorScheme( 10 );
   b_pulse.setFont(b_font);
   /*
    button for Stop */
   //b_stop = new GButton( this, x_calib + 1029, y_calib + 118, 71, 30, "Stop" );
-  b_stop = new GButton( this, x_calib + 374, y_calib + 909, 71, 30, "Stop" );
+  b_stop = new GButton( this, x_calib + 374, y_calib + 846, 71, 30, "Stop" );
   b_stop.setLocalColorScheme( 11 );
   b_stop.setFont(b_font);
   /*

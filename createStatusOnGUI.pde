@@ -17,7 +17,7 @@ void createStatusOnGUI() {
       || (settings.get("f1") == 0 && settings.get("f2") >= 20)
       || (settings.get("f1") >= 20 && settings.get("f2") >= 20)) {
       fill(149, 214, 208);
-      rect(x_calib, y_calib + 791, displayWidth*0.8, 198);
+      rect(x_calib, y_calib + 791, displayWidth*0.8, 100);
       //text("Ready", x_calib + 100, y_calib + 909);
       b_pulse.setEnabled(true);
       b_stop.setEnabled(true);

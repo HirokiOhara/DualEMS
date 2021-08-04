@@ -71,7 +71,7 @@ void setup() {
   //x_calib = (displayWidth-1200)/2;
   //y_calib = (displayHeight-787)/2;
   x_calib = displayWidth*0.1;
-  y_calib = (displayHeight-989)/2;
+  y_calib = (displayHeight-891)/2;
   frameRate(60);
   /*
    Initialize of "settings"
