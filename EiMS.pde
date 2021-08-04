@@ -1,12 +1,11 @@
 /*
  GUI and Software for "EiMS"
- ver. 1.2
+ ver. 1.3
  
  This is audio output ver. software for EMS & IFC.
  Most of this software based on wavEMS.
  
- Designed by Hiroki OHARA, Tokyo Tech
- 不許複製・無断転載 © Hiroki Ohara All Rights Reserved */
+ Copyright (c) 2021 Hiroki Ohara Released under the MIT license */
 
 /*
  Libraries */
