@@ -322,6 +322,8 @@ void subThread() {
     float cur = millis();
     init = true;
     counter = 0;
+    file.println(settings);
+    file.println(times.get(settings.get("TIME")));
     sendMsg(my_port, getData);
     while (millis() - cur < time) {
       if (!running)
