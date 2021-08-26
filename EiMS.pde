@@ -1,6 +1,6 @@
 /*
  GUI and Software for "EiMS"
- ver. 2.0
+ ver. 2.1
  
  This is made for Electrical Muscle Stimulation(EMS).
  The stimulation data is treated as audio data in this software.
@@ -79,11 +79,12 @@ ControlP5 i_f2;  // f2: Right Speaker
 
 /*
  For force sensor (Leptrino) ==================== ==================== */
-PrintWriter file;
+PrintWriter forces_file;
+PrintWriter params_file;
 Serial my_port;
 float time; // [msec]
 boolean running = false;
-int counter;  // output.csvのインデックス用
+int n_trial;  // output.csvのインデックス用
 float[] rated_value_list = new float[6];  // センサーの定格値
 boolean init;
 float[] init_value_list = new float[6];
@@ -180,7 +181,11 @@ void setup() {
     my_port.clear();
     sendMsg(my_port, checkRatedValue);
   }
-  file = createWriter("output.csv");
+  forces_file = createWriter("output_forces.csv");
+  forces_file.println("n_of_trial, Fx, Fy, Fz, Mx, My, Mz");
+  params_file = createWriter("output_params.csv");
+  params_file.println("n_of_trial, TYPE, POLE, PERIOD, PULSE, f1, f2, TIME, L_inver, R_inver");
+  n_trial = 0;
   /* ==================== ==================== ==================== */
   //survey = new Survey();
 }
@@ -321,23 +326,29 @@ void subThread() {
   while (running) {
     float cur = millis();
     init = true;
-    counter = 0;
-    file.println(settings);
-    file.println(times.get(settings.get("TIME")));
+    String params = "";
+    params += n_trial + ",";
+    for (Map.Entry me : settings.entrySet()) {
+      params += me.getValue() + ",";
+    }
+    params_file.print(params);
     sendMsg(my_port, getData);
     while (millis() - cur < time) {
       if (!running)
         break;
     }
     sendMsg(my_port, stopData);
+    n_trial += 1;
     running = false;
   }
 }
 
 void keyPressed() {
   if (key == 'p') {
-    file.flush();  // Writes the remaining data to the file
-    file.close();  // Finishes the file
+    forces_file.flush();  // Writes the remaining data to the file
+    forces_file.close();  // Finishes the file
+    params_file.flush();
+    params_file.close();
     exit();  // Stops the program
   }
 }
@@ -438,7 +449,7 @@ void calForce(byte[] res) {
     }
     break;
   case 0x30:
-    String output_single = str(counter);
+    String output_single = str(n_trial);
     for (int j = 0; j < 6; j++) {
       String bi = binary(res[5 + 2*j]) + binary(res[4 + 2*j]);
       float F = unbinary(bi);
@@ -456,15 +467,14 @@ void calForce(byte[] res) {
       } else
         println("error");
     }
-    file.println(output_single);
-    counter += 1;
+    forces_file.println(output_single);
     if (init) {
       init = false;
     }
     break;
   case 0x32:
     if (res_data[0] == 0x14) {
-      String output_serial = str(counter);
+      String output_serial = str(n_trial);
       for (int j = 0; j < 6; j++) {
         String bi = binary(res[5 + 2*j]) + binary(res[4 + 2*j]);
         float F = unbinary(bi);
@@ -482,8 +492,7 @@ void calForce(byte[] res) {
         } else
           println("error");
       }
-      file.println(output_serial);
-      counter += 1;
+      forces_file.println(output_serial);
       if (init) {
         init = false;
       }
