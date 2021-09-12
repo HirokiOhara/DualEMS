@@ -1,25 +1,26 @@
-/*
- GUI and Software for "EiMS"
- ver. 2.1
- 
- This is made for Electrical Muscle Stimulation(EMS).
- The stimulation data is treated as audio data in this software.
- You can easilly set
-   - Pulse number
-   - Pulse type
-   - Pulse pole
-   - Pulse orientation
-   - Pulse frequancy
-   - Pulse width
-   - Stimulation time
- for each stimulation.
- 
- Also, you can get the force data and show graphic animation using Leptrino's sensor.
- The graphic animation is already set up to represent Y-axis rotation in the sensor's coordinate system.
- If you want chage the graphic animation, edit "rotateAnimation" file.
- 
- Copyright (c) 2021 Hiroki Ohara
- Released under the MIT license */
+/* -------------------------------------------------------------------------------------------------------------
+| GUI and Software for "EiMS"                                                                                   |
+| ver. 2.1                                                                                                      |
+|                                                                                                               |
+| This is made for Electrical Muscle Stimulation(EMS).                                                          |
+| The stimulation data is treated as audio data in this software.                                               |
+| You can easilly set                                                                                           |
+| - Pulse number                                                                                                |
+| - Pulse type                                                                                                  |
+| - Pulse pole                                                                                                  |
+| - Pulse orientation                                                                                           |
+| - Pulse frequancy                                                                                             |
+| - Pulse width                                                                                                 |
+| - Stimulation time                                                                                            |
+| for each stimulation.                                                                                         |
+|                                                                                                               |
+| Also, you can get the force data and show graphic animation using Leptrino's sensor.                          |
+| The graphic animation is already set up to represent Y-axis rotation in the sensor's coordinate system.       |
+| If you want chage the graphic animation, edit "rotateAnimation" file.                                         |
+|                                                                                                               |
+| Copyright (c) 2021 Hiroki Ohara                                                                               |
+| Released under the MIT license                                                                                |
+ ------------------------------------------------------------------------------------------------------------- */
 
 /*
  Libraries */
@@ -78,20 +79,21 @@ ControlP5 i_f1;  // f1: Left Speaker
 ControlP5 i_f2;  // f2: Right Speaker
 
 /*
- For force sensor (Leptrino) ==================== ==================== */
+ ==================== For force sensor (Leptrino) ==================== */
 PrintWriter forces_file;
 PrintWriter params_file;
+PrintWriter check_file;
 Serial my_port;
 float time; // [msec]
 boolean running = false;
 int n_trial;  // output.csvのインデックス用
 float[] rated_value_list = new float[6];  // センサーの定格値
-boolean init;
+boolean init;  // センサーの初期値を基準とするために
 float[] init_value_list = new float[6];
 float[] calculated_list = new float[6];
 /*
  利き手に合わせて"lefty"の値を変更する */
-boolean lefty = true;
+boolean lefty;
 /*
  Check the connection between PC and sensor */
 boolean connecting = false;
@@ -154,6 +156,7 @@ void setup() {
   times.put(1, 2f);
   times.put(2, 5f);
   stop_flg = false;
+  n_trial = 0;
   /*
    pulseが0である音を出力するように設定する */
   float[] zeroPulse = new float[int(sampleRate)];
@@ -173,7 +176,7 @@ void setup() {
   createButtonAndInputFieldOnGUI();
   thread("updateParametersFromInputFields");
   /*
-   For force sensor (Leptrino) ==================== ==================== */
+   ==================== For force sensor (Leptrino) ==================== */
   if (Serial.list().length >= 5)
     connecting = true;
   if (connecting) {
@@ -181,11 +184,23 @@ void setup() {
     my_port.clear();
     sendMsg(my_port, checkRatedValue);
   }
-  forces_file = createWriter("output_forces.csv");
-  forces_file.println("n_of_trial, Fx, Fy, Fz, Mx, My, Mz");
-  params_file = createWriter("output_params.csv");
-  params_file.println("n_of_trial, TYPE, POLE, PERIOD, PULSE, f1, f2, TIME, L_inver, R_inver");
-  n_trial = 0;
+  lefty = false;
+  /* ==================== ==================== ==================== */
+  /*
+   ==================== File管理用 ==================== */
+  String who_id = "00";
+  String exp_type = "pro";
+  //String exp_type = "sup";
+
+  String filename_1 = who_id + "_" + exp_type + "_" + "force.csv";
+  String filename_2 = who_id + "_" + exp_type + "_" + "param.csv";
+  String filename_3 = who_id + "_" + exp_type + "_" + "checksheet.csv";
+  forces_file = createWriter(filename_1);
+  forces_file.println("n_of_trials,Fx,Fy,Fz,Mx,My,Mz");
+  params_file = createWriter(filename_2);
+  params_file.println("n_of_trials,TYPE,POLE,PERIOD,PULSE,f1,f2,TIME,L_inver,R_inver");
+  check_file = createWriter(filename_3);
+  check_file.println("n_of_trials,check");
   /* ==================== ==================== ==================== */
   //survey = new Survey();
 }
@@ -306,7 +321,7 @@ void updateParametersFromInputFields() {
     String f2 = i_f2.get(Textfield.class, "f2").getText();
     settings.put("PERIOD", int(pi));
     settings.put("PULSE", int(pw));
-    settings.put("f1", int(f1));
+    settings.put("f1", int(f1)); 
     settings.put("f2", int(f2));
     if (pi != "0") {
       if (f1 != "0") {
@@ -326,30 +341,38 @@ void subThread() {
   while (running) {
     float cur = millis();
     init = true;
+    n_trial += 1;
     String params = "";
-    params += n_trial + ",";
+    params += n_trial;
     for (Map.Entry me : settings.entrySet()) {
-      params += me.getValue() + ",";
+      params += "," + me.getValue();
     }
-    params_file.print(params);
+    params_file.println(params);
     sendMsg(my_port, getData);
     while (millis() - cur < time) {
       if (!running)
         break;
     }
     sendMsg(my_port, stopData);
-    n_trial += 1;
     running = false;
   }
 }
 
 void keyPressed() {
-  if (key == 'p') {
+  switch(key) {
+  case 'p':
     forces_file.flush();  // Writes the remaining data to the file
     forces_file.close();  // Finishes the file
     params_file.flush();
     params_file.close();
+    check_file.flush();
+    check_file.close();
     exit();  // Stops the program
+    break;
+  case 'n':
+    check_file.print(n_trial);
+    check_file.println(",NG");
+    break;
   }
 }
 
@@ -385,6 +408,8 @@ void serialEvent(Serial p) {
   case 0:
     if (inByte == ccStart[0]) {
       res_state += 1;
+    } else {
+      res_bcc = 0x00;
     }
     break;
   case 1:
@@ -419,11 +444,15 @@ void serialEvent(Serial p) {
     break;
   case 6:
     if (res_bcc == inByte) {
-      //println("> bcc of " + hex(res_data[2]) + " --- greate!");
-      calForce(res_data);
-    } else
-      //println("> bcc of " + hex(res_data[2]) + " --- error");
-      res_bcc = 0x00;
+      if (res_data[2] == 0x2B || res_data[2] == 0x30 || res_data[2] == 0x32) {
+        calForce(res_data);
+      }
+    } else {
+      println("> bcc of " + hex(res_data[2]) + " --- error");
+      println("end: " + res_bcc + ", " + inByte);
+      println(res_data);
+    }
+    res_bcc = 0x00;
     res_id = 0;
     res_state = 0;
     break;
@@ -465,9 +494,8 @@ void calForce(byte[] res) {
         calculated_list[j] = rated_value_list[j] * F/10000 - init_value_list[j];
         output_single +=  "," + calculated_list[j];
       } else
-        println("error");
+        println("> calForce " + "0x30" + " --- error");
     }
-    forces_file.println(output_single);
     if (init) {
       init = false;
     }
@@ -484,14 +512,15 @@ void calForce(byte[] res) {
         }
         if (abs(F) <= 10000) {
           if (init) {
-            init_value_list[j] = rated_value_list[j] * F/10000;
+            //init_value_list[j] = rated_value_list[j] * F/10000;
+            init_value_list[j] = F;
           }
-          //println(rated_value_list[j] * F/10000 - init_value_list[j]);
-          calculated_list[j] = rated_value_list[j] * F/10000 - init_value_list[j];
+          calculated_list[j] = rated_value_list[j] * (F - init_value_list[j]) / 10000;
           output_serial +=  "," + calculated_list[j];
         } else
-          println("error");
+          println("> calForce " + "0x32" + " --- error");
       }
+      //println(calculated_list);
       forces_file.println(output_serial);
       if (init) {
         init = false;
