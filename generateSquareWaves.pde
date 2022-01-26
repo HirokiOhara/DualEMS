@@ -14,10 +14,12 @@ void generateSquareWaves(HashMap set, float[] LPulse, float[] RPulse, float LCyc
      LPulse */
     for (int j = 0; j < int(LPulse.length/LCyc); j++) {
       for (int i = 0; i < wavelength_f1; i++) { 
-        LPulse[i+int(LCyc)*j] = 0.5;
+        //LPulse[i+int(LCyc)*j] = 0.5;
+        LPulse[i+int(LCyc)*j] = 1;
       }
       for (int i = wavelength_f1; i < wavelength_f1*2; i++) { 
-        LPulse[i+int(LCyc)*j] = - 0.5;
+        //LPulse[i+int(LCyc)*j] = - 0.5;
+        LPulse[i+int(LCyc)*j] = - 1;
       }
       for (int ii = 0; ii < int(LCyc) - (wavelength_f1*(pole + 1)); ii++) {
         LPulse[wavelength_f1*(pole + 1) + ii + int(LCyc)*j] = 0;
@@ -27,10 +29,12 @@ void generateSquareWaves(HashMap set, float[] LPulse, float[] RPulse, float LCyc
      RPulse */
     for (int j = 0; j < int(RPulse.length/RCyc); j++) {
       for (int i = 0; i < wavelength_f2; i++) { 
-        RPulse[i+int(RCyc)*j] = 0.5;
+        //RPulse[i+int(RCyc)*j] = 0.5;
+        RPulse[i+int(RCyc)*j] = 1;
       }
       for (int i = wavelength_f2; i < wavelength_f2*2; i++) { 
-        RPulse[i+int(RCyc)*j] = -0.5;
+        //RPulse[i+int(RCyc)*j] = -0.5;
+        RPulse[i+int(RCyc)*j] = -1;
       }
       for (int ii = 0; ii < int(RCyc) - (wavelength_f2*(pole + 1)); ii++) {
         RPulse[wavelength_f2*(pole + 1) + ii + int(RCyc)*j] = 0;
@@ -41,7 +45,8 @@ void generateSquareWaves(HashMap set, float[] LPulse, float[] RPulse, float LCyc
      LPulse */
     for (int j = 0; j < int(LPulse.length/LCyc); j++) {
       for (int i = 0; i < wavelength_f1; i++) { 
-        LPulse[i+int(LCyc)*j] = 0.5;
+        //LPulse[i+int(LCyc)*j] = 0.5;
+        LPulse[i+int(LCyc)*j] = 1;
       }
       for (int ii = 0; ii < int(LCyc) - (wavelength_f1*(pole + 1)); ii++) {
         LPulse[wavelength_f1*(pole + 1) + ii + int(LCyc)*j] = 0;
@@ -51,7 +56,8 @@ void generateSquareWaves(HashMap set, float[] LPulse, float[] RPulse, float LCyc
      RPulse */
     for (int j = 0; j < int(RPulse.length/RCyc); j++) {
       for (int i = 0; i < wavelength_f2; i++) { 
-        RPulse[i+int(RCyc)*j] = 0.5;
+        //RPulse[i+int(RCyc)*j] = 0.5;
+        RPulse[i+int(RCyc)*j] = 1;
       }
       for (int ii = 0; ii < int(RCyc) - (wavelength_f2*(pole + 1)); ii++) {
         RPulse[wavelength_f2*(pole + 1) + ii + int(RCyc)*j] = 0;

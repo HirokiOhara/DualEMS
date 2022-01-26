@@ -1,25 +1,25 @@
-/* -------------------------------------------------------------------------------------------------------------
-| GUI and Software for "EiMS"                                                                                   |
-| ver. 2.1                                                                                                      |
-|                                                                                                               |
-| This is made for Electrical Muscle Stimulation(EMS).                                                          |
-| The stimulation data is treated as audio data in this software.                                               |
-| You can easilly set                                                                                           |
-| - Pulse number                                                                                                |
-| - Pulse type                                                                                                  |
-| - Pulse pole                                                                                                  |
-| - Pulse orientation                                                                                           |
-| - Pulse frequancy                                                                                             |
-| - Pulse width                                                                                                 |
-| - Stimulation time                                                                                            |
-| for each stimulation.                                                                                         |
-|                                                                                                               |
-| Also, you can get the force data and show graphic animation using Leptrino's sensor.                          |
-| The graphic animation is already set up to represent Y-axis rotation in the sensor's coordinate system.       |
-| If you want chage the graphic animation, edit "rotateAnimation" file.                                         |
-|                                                                                                               |
-| Copyright (c) 2021 Hiroki Ohara                                                                               |
-| Released under the MIT license                                                                                |
+/* ---------------------------------------------------------------------------------------------------------------
+ | GUI and Software for "EiMS"                                                                                   |
+ | ver. 2.1                                                                                                      |
+ |                                                                                                               |
+ | This is made for Electrical Muscle Stimulation (EMS).                                                          |
+ | The stimulation data is treated as audio data in this software.                                               |
+ | You can easilly set                                                                                           |
+ | - Pulse number                                                                                                |
+ | - Pulse type                                                                                                  |
+ | - Pulse pole                                                                                                  |
+ | - Pulse orientation                                                                                           |
+ | - Pulse frequancy                                                                                             |
+ | - Pulse width                                                                                                 |
+ | - Stimulation time                                                                                            |
+ | for each stimulation.                                                                                         |
+ |                                                                                                               |
+ | Also, you can get the force data and show graphic animation using Leptrino's sensor.                          |
+ | The graphic animation is already set up to represent Y-axis rotation in the sensor's coordinate system.       |
+ | If you want chage the graphic animation, edit "rotateAnimation" file.                                         |
+ |                                                                                                               |
+ | Copyright (c) 2021 Hiroki Ohara                                                                               |
+ | Released under the MIT license                                                                                |
  ------------------------------------------------------------------------------------------------------------- */
 
 /*
@@ -84,9 +84,10 @@ PrintWriter forces_file;
 PrintWriter params_file;
 PrintWriter check_file;
 Serial my_port;
-float time; // [msec]
+float measure_time; // [msec]
 boolean running = false;
 int n_trial;  // output.csvのインデックス用
+int n_time;  // output.csvのインデックス用
 float[] rated_value_list = new float[6];  // センサーの定格値
 boolean init;  // センサーの初期値を基準とするために
 float[] init_value_list = new float[6];
@@ -157,6 +158,7 @@ void setup() {
   times.put(2, 5f);
   stop_flg = false;
   n_trial = 0;
+  n_time = 0;
   /*
    pulseが0である音を出力するように設定する */
   float[] zeroPulse = new float[int(sampleRate)];
@@ -188,15 +190,12 @@ void setup() {
   /* ==================== ==================== ==================== */
   /*
    ==================== File管理用 ==================== */
-  String who_id = "00";
-  String exp_type = "pro";
-  //String exp_type = "sup";
-
-  String filename_1 = who_id + "_" + exp_type + "_" + "force.csv";
-  String filename_2 = who_id + "_" + exp_type + "_" + "param.csv";
-  String filename_3 = who_id + "_" + exp_type + "_" + "checksheet.csv";
+  //String who_id = "07";
+  String filename_1 = "Leptrino/" + month() + ":" + day() + "-" + hour() + minute() + "_" + "force.csv";
+  String filename_2 = "Leptrino/" + month() + ":" + day() + "-" + hour() + minute() + "_" + "param.csv";
+  String filename_3 = "Leptrino/" + month() + ":" + day() + "-" + hour() + minute() + "_" + "checksheet.csv";
   forces_file = createWriter(filename_1);
-  forces_file.println("n_of_trials,Fx,Fy,Fz,Mx,My,Mz");
+  forces_file.println("n_of_trials,index,Fx,Fy,Fz,Mx,My,Mz");
   params_file = createWriter(filename_2);
   params_file.println("n_of_trials,TYPE,POLE,PERIOD,PULSE,f1,f2,TIME,L_inver,R_inver");
   check_file = createWriter(filename_3);
@@ -233,7 +232,7 @@ void handleButtonEvents(GButton button, GEvent event) {
       float cycle_f2 = sampleRate / (float)settings.get("f2");
       if (!running && connecting) {
         running = true;
-        time = (times.get(settings.get("TIME")) + 1) * 1000;
+        measure_time = (times.get(settings.get("TIME")) + 1) * 1000;
         thread("subThread");
       }
       switch(settings.get("TYPE")) {
@@ -342,16 +341,24 @@ void subThread() {
     float cur = millis();
     init = true;
     n_trial += 1;
+    n_time = 0;
     String params = "";
-    params += n_trial;
-    for (Map.Entry me : settings.entrySet()) {
-      params += "," + me.getValue();
-    }
+    params += n_trial+",";
+    params += settings.get("TYPE")+","
+             +settings.get("POLE")+","
+             +settings.get("PERIOD")+","
+             +settings.get("PULSE")+","
+             +settings.get("f1")+","
+             +settings.get("f2")+","
+             +settings.get("TIME")+","
+             +settings.get("L_inver")+","
+             +settings.get("R_inver");
     params_file.println(params);
     sendMsg(my_port, getData);
-    while (millis() - cur < time) {
-      if (!running)
+    while (millis() - cur < measure_time) {
+      if (!running) {
         break;
+      }
     }
     sendMsg(my_port, stopData);
     running = false;
@@ -444,13 +451,17 @@ void serialEvent(Serial p) {
     break;
   case 6:
     if (res_bcc == inByte) {
-      if (res_data[2] == 0x2B || res_data[2] == 0x30 || res_data[2] == 0x32) {
+      if (res_data[0] == 0x04 && res_data[2] == 0x32) {
+        println("serial commun. is running");
+      } else if (res_data[2] == 0x2B || res_data[2] == 0x30 || res_data[2] == 0x32) {
         calForce(res_data);
+      } else if (res_data[2] == 0x33) {
+        println("serial commun. is ended");
       }
     } else {
       println("> bcc of " + hex(res_data[2]) + " --- error");
-      println("end: " + res_bcc + ", " + inByte);
-      println(res_data);
+      //println("end: " + res_bcc + ", " + inByte);
+      //println(res_data);
     }
     res_bcc = 0x00;
     res_id = 0;
@@ -478,7 +489,7 @@ void calForce(byte[] res) {
     }
     break;
   case 0x30:
-    String output_single = str(n_trial);
+    String output_single = str(n_trial) + "," + str(n_time);
     for (int j = 0; j < 6; j++) {
       String bi = binary(res[5 + 2*j]) + binary(res[4 + 2*j]);
       float F = unbinary(bi);
@@ -499,10 +510,11 @@ void calForce(byte[] res) {
     if (init) {
       init = false;
     }
+    n_time += 1;
     break;
   case 0x32:
     if (res_data[0] == 0x14) {
-      String output_serial = str(n_trial);
+      String output_serial = str(n_trial) + "," + str(n_time); 
       for (int j = 0; j < 6; j++) {
         String bi = binary(res[5 + 2*j]) + binary(res[4 + 2*j]);
         float F = unbinary(bi);
@@ -525,6 +537,7 @@ void calForce(byte[] res) {
       if (init) {
         init = false;
       }
+      n_time += 1;
     }
     break;
   }
