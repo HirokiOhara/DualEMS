@@ -1,26 +1,26 @@
-/* ---------------------------------------------------------------------------------------------------------------
- | GUI and Software for "EiMS"                                                                                   |
- | ver. 2.1                                                                                                      |
- |                                                                                                               |
- | This is made for Electrical Muscle Stimulation (EMS).                                                          |
- | The stimulation data is treated as audio data in this software.                                               |
- | You can easilly set                                                                                           |
- | - Pulse number                                                                                                |
- | - Pulse type                                                                                                  |
- | - Pulse pole                                                                                                  |
- | - Pulse orientation                                                                                           |
- | - Pulse frequancy                                                                                             |
- | - Pulse width                                                                                                 |
- | - Stimulation time                                                                                            |
- | for each stimulation.                                                                                         |
- |                                                                                                               |
- | Also, you can get the force data and show graphic animation using Leptrino's sensor.                          |
- | The graphic animation is already set up to represent Y-axis rotation in the sensor's coordinate system.       |
- | If you want chage the graphic animation, edit "rotateAnimation" file.                                         |
- |                                                                                                               |
- | Copyright (c) 2021 Hiroki Ohara                                                                               |
- | Released under the MIT license                                                                                |
- ------------------------------------------------------------------------------------------------------------- */
+/*-------------------------------------------------------------------------------------------------------------
+     GUI and Software for "EiMS"
+     ver. 2.1
+     
+     This is made for Electrical Muscle Stimulation (EMS).
+     The stimulation data is treated as audio data in this software.
+     You can easilly set the following for each stimulation:
+     - Pulse number
+     - Pulse type
+     - Pulse pole
+     - Pulse orientation
+     - Pulse frequancy
+     - Pulse width
+     - Stimulation time
+     
+     
+     Also, you can get the force data and show graphic animation using Leptrino's sensor.
+     The graphic animation is already set up to represent Y-axis rotation in the sensor's coordinate system.
+     If you want chage the graphic animation, edit "rotateAnimation" file.
+     
+     Copyright (c) 2021 Hiroki Ohara
+     Released under the MIT licens
+   -------------------------------------------------------------------------------------------------------------*/
 
 /*
  Libraries */
@@ -345,14 +345,14 @@ void subThread() {
     String params = "";
     params += n_trial+",";
     params += settings.get("TYPE")+","
-             +settings.get("POLE")+","
-             +settings.get("PERIOD")+","
-             +settings.get("PULSE")+","
-             +settings.get("f1")+","
-             +settings.get("f2")+","
-             +settings.get("TIME")+","
-             +settings.get("L_inver")+","
-             +settings.get("R_inver");
+      +settings.get("POLE")+","
+      +settings.get("PERIOD")+","
+      +settings.get("PULSE")+","
+      +settings.get("f1")+","
+      +settings.get("f2")+","
+      +settings.get("TIME")+","
+      +settings.get("L_inver")+","
+      +settings.get("R_inver");
     params_file.println(params);
     sendMsg(my_port, getData);
     while (millis() - cur < measure_time) {

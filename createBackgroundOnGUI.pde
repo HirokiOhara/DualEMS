@@ -1,4 +1,4 @@
- void createBackgroundOnGUI() {
+void createBackgroundOnGUI() {
   background(255, 255, 255);
   fill(255, 255, 255);
   noStroke();
