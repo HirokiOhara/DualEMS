@@ -25,10 +25,5 @@ If you want chage the graphic animation, edit "rotateAnimation" file.
 Hiroki Ohara, Tokyo Tech ( h.ohara[at]gs.haselab.net )
 
 
-## Copyrights, License
-Copyright (c) 2021 Hiroki Ohara
-Released under the MIT license
-
-
 ## Citation
 When using or building upon this device/work in an academic publication, please consider citing as follows:
