@@ -1,4 +1,4 @@
-# Software and GUI for "EiMS"
+# Software and GUI for "DualEMS"
 ver. 2.1
 
 This is made for Electrical Muscle Stimulation(EMS).
