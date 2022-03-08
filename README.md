@@ -1,5 +1,5 @@
 # Software and GUI for DualEMS
-![title](https://user-images.githubusercontent.com/38965082/157209157-13f97a81-257b-4657-9256-5e1b6cb4e87d.jpeg)
+![DualEMS](https://user-images.githubusercontent.com/38965082/157212914-563d5cc6-cb89-44c5-b315-6c97e5fe9eeb.jpeg)![title](https://user-images.githubusercontent.com/38965082/157209157-13f97a81-257b-4657-9256-5e1b6cb4e87d.jpeg)
 
 This repository contains source code of software from our work "DualEMS: Two-Channel Arbitrary Waveform Electrical Muscle Stimulation Device to Design Interference Stimulation" (ACM AHs2022).
 
